@@ -1,0 +1,72 @@
+/*
+ * @Author: liyingda
+ * @Date: 2024-07-13 16:52:20
+ * @LastEditors: liyingda
+ * @LastEditTime: 2024-07-15 20:42:14
+ * @Description: 
+ */
+{
+  "name": "thskhdeveloptool",
+  "displayName": "thsKhDevelopTool",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "clipboardTextSidebar",
+          "title": "Clipboard Text",
+          "icon": "image/1.svg"
+        }
+      ]
+    },
+    "views": {
+      "clipboardTextSidebar": [
+        {
+          "id": "clipboardTextContent",
+          "name": "Clipboard"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extension.listenTabCompletion",
+        "title": "Listen Tab Completion"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/node-cron": "^3.0.11",
+    "@types/vscode": "^1.91.0",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "node-cron": "^3.0.3"
+  }
+}
