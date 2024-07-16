@@ -1,11 +1,19 @@
+// sideBar.ts
 import * as vscode from 'vscode';
 
-
-export function registerClipboardTextListSidebar(context: vscode.ExtensionContext) {
+export function registerClipboardTextListSidebar(
+  context: vscode.ExtensionContext
+) {
   const sidebarProvider = new ClipboardTextListSidebarProvider(context);
-  // context.workspaceState.update('sidebarProvider', sidebarProvider);
-  console.log('12313sss1334444333333. ',  vscode.CancellationToken)
-  vscode.window.registerWebviewViewProvider('clipboardTextContent', sidebarProvider);
+  vscode.window.registerWebviewViewProvider(
+    'clipboardTextContent',
+    sidebarProvider
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand('updateClipboardTextList', () => {
+      sidebarProvider.updateWebviewContent();
+    })
+  );
 }
 
 class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
@@ -14,7 +22,6 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
-    console.log('1231313333322222333. ',  vscode.CancellationToken)
   }
 
   public resolveWebviewView(
@@ -22,13 +29,28 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
     _context: vscode.WebviewViewResolveContext<unknown>,
     _token: vscode.CancellationToken
   ) {
-    console.log('12313133333333')
     this._view = webviewView;
 
     webviewView.webview.options = {
       enableScripts: true,
     };
 
+    this.updateWebviewContent();
+    webviewView.webview.onDidReceiveMessage((message) => {
+      if (message.command === 'copyText') {
+        const index = message.index;
+        const clipboardTextList: string[] =
+          this._context.workspaceState.get('clipboardTextList') || [];
+        const textToCopy = clipboardTextList[index];
+        if (textToCopy) {
+          vscode.env.clipboard.writeText(textToCopy);
+          vscode.window.showInformationMessage('Copied to clipboard');
+        }
+      }
+    });
+  }
+
+  public updateWebviewContent() {
     const clipboardTextList: string[] =
       this._context.workspaceState.get('clipboardTextList') || [];
 
@@ -36,21 +58,17 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
       .map(
         (text, index) => `
           <div class="text-item">
-            <span>${index + 1}. ${text}</span>
-            <button onclick="copyText('${text.replace(/'/g, "\\'")}')">Copy</button>
+            <span>${text}</span>
+            <button class="ant-btn" onclick="copyText(${index})">Copy</button>
           </div>
         `
       )
       .join('');
 
-    this._view.webview.html = this.getHtmlForWebview(content);
-
-    webviewView.webview.onDidReceiveMessage((message) => {
-      if (message.command === 'copyText') {
-        vscode.env.clipboard.writeText(message.text);
-        vscode.window.showInformationMessage('Copied to clipboard');
-      }
-    });
+    if (this._view) {
+      // https://khtest.10jqka.com.cn/khh5/khh5_download/develop.html
+      this._view.webview.html = this.getHtmlForWebview(content);
+    }
   }
 
   public getHtmlForWebview(content: string): string {
@@ -63,8 +81,35 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
         <title>Clipboard Text List</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 10px; }
-          .text-item { margin-bottom: 10px; }
-          button { margin-left: 10px; }
+          .text-item { margin-bottom: 10px; position: relative;
+            line-height: 1.5; }
+          .underline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: #ccc;
+          }
+          .ant-btn {
+            margin-left: 10px;
+            padding: 0px 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            border-radius: 4px;
+            color: #fff;
+            background-color: #1890ff;
+            border: 1px solid #1890ff;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+          }
+          .ant-btn:hover {
+            background-color: #40a9ff;
+            border-color: #40a9ff;
+          }
+          .ant-btn:focus {
+            outline: none;
+          }
         </style>
       </head>
       <body>
@@ -72,8 +117,8 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
         <script>
           const vscode = acquireVsCodeApi();
 
-          function copyText(text) {
-            vscode.postMessage({ command: 'copyText', text });
+          function copyText(index) {
+            vscode.postMessage({ command: 'copyText', index });
           }
         </script>
       </body>

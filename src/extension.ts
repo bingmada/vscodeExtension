@@ -14,9 +14,7 @@ import { registerClipboardTextListSidebar } from './sideBar';
 export function activate(context: vscode.ExtensionContext) {
   // 初始化功能模块
   setupTabCompletionListener(context);
-  scheduleWeeklyTask(context); 
-  console.log('12313sss1333333333333. ',  vscode.CancellationToken)
-
+  scheduleWeeklyTask(context);
   registerClipboardTextListSidebar(context);
   // 注册命令
   let disposable = vscode.commands.registerCommand(
