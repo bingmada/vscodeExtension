@@ -1,11 +1,13 @@
+/*
+ * @Author: liyingda
+ * @Date: 2024-07-15 14:22:25
+ * @LastEditors: liyingda
+ * @LastEditTime: 2024-07-17 10:54:32
+ * @Description:
+ */
 import * as vscode from 'vscode';
 
 export function setupTabCompletionListener(context: vscode.ExtensionContext) {
-  let completionLineForKhAi =
-    context.workspaceState.get<number>('completionLineForKhAi') || 0;
-  let clipboardTextList =
-    context.workspaceState.get<string[]>('clipboardTextList') || [];
-
   let isUndoing = false;
   let isRedoing = false;
 
@@ -29,41 +31,68 @@ export function setupTabCompletionListener(context: vscode.ExtensionContext) {
     })
   );
   // 处理剪贴板逻辑
+  let alClipboard = false;
+  setInterval(() => {
+    if (alClipboard) {
+      alClipboard = false;
+      return;
+    }
+    handleClipboardText();
+  }, 2000);
   const handleClipboardText = async () => {
+    let clipboardTextList =
+      context.globalState.get<string[]>('clipboardTextList') || [];
     const clipboardText = await vscode.env.clipboard.readText();
     if (clipboardTextList.indexOf(clipboardText) === -1) {
       clipboardTextList.push(clipboardText);
       if (clipboardTextList.length > 30) {
         clipboardTextList.shift(); // 删除前面的元素
       }
-      context.workspaceState.update('clipboardTextList', clipboardTextList);
+      context.globalState.update('clipboardTextList', clipboardTextList);
       vscode.commands.executeCommand('updateClipboardTextList'); // 更新侧边栏内容
     }
   };
-
   vscode.workspace.onDidChangeTextDocument((event) => {
     if (isUndoing || isRedoing) {
       // 跳过撤销或重做操作
       return;
     }
     event.contentChanges.forEach((change) => {
+      let completionLineForKhAi =
+        context.globalState.get<number>('completionLineForKhAi') || 0;
+      let completionLineForKh =
+        context.globalState.get<number>('completionLineForKh') || 0;
       const newText = change.text;
       const newTextTrim = newText.trim();
-
+      const newTextList = newText.split('\n');
+      // 检查是否包含换行符
+      if (newText.includes('\n')) {
+        const newLines = newTextList.length - 1;
+        completionLineForKh += newLines;
+        context.globalState.update(
+          'completionLineForKh',
+          completionLineForKh
+        );
+        console.log('Total input lines:', completionLineForKh);
+      }
       if (!newTextTrim || newTextTrim === '\n' || newTextTrim === '\r\n') {
         return;
       }
 
-      const newLines = newText.split('\n').filter(line => line.trim() !== '' && line !== '\r').length;
+      const newLines = newTextList.filter(
+        (line) => line.trim() !== '' && line !== '\r'
+      ).length;
       const completionLength =
         newText.length - event.document.getText(change.range).length;
-
       if (completionLength > 6) {
+        alClipboard = true;
         handleClipboardText().then(() => {
+          let clipboardTextList =
+            context.globalState.get<string[]>('clipboardTextList') || [];
           if (clipboardTextList.indexOf(newText) === -1) {
             completionLineForKhAi += newLines;
             console.log(completionLineForKhAi);
-            context.workspaceState.update(
+            context.globalState.update(
               'completionLineForKhAi',
               completionLineForKhAi
             );

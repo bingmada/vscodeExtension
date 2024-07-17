@@ -1,4 +1,3 @@
-// sideBar.ts
 import * as vscode from 'vscode';
 
 export function registerClipboardTextListSidebar(
@@ -40,7 +39,7 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
       if (message.command === 'copyText') {
         const index = message.index;
         const clipboardTextList: string[] =
-          this._context.workspaceState.get('clipboardTextList') || [];
+          this._context.globalState.get('clipboardTextList') || [];
         const textToCopy = clipboardTextList[index];
         if (textToCopy) {
           vscode.env.clipboard.writeText(textToCopy);
@@ -52,7 +51,7 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
 
   public updateWebviewContent() {
     const clipboardTextList: string[] =
-      this._context.workspaceState.get('clipboardTextList') || [];
+      this._context.globalState.get('clipboardTextList') || [];
 
     const content = clipboardTextList
       .map(
@@ -66,7 +65,6 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
       .join('');
 
     if (this._view) {
-      // https://khtest.10jqka.com.cn/khh5/khh5_download/develop.html
       this._view.webview.html = this.getHtmlForWebview(content);
     }
   }
@@ -120,6 +118,14 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
           function copyText(index) {
             vscode.postMessage({ command: 'copyText', index });
           }
+
+          // Function to scroll to the bottom
+          function scrollToBottom() {
+            window.scrollTo(0, document.body.scrollHeight);
+          }
+
+          // Scroll to the bottom when the content is updated
+          scrollToBottom();
         </script>
       </body>
       </html>
