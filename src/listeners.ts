@@ -2,7 +2,7 @@
  * @Author: liyingda
  * @Date: 2024-07-15 14:22:25
  * @LastEditors: liyingda
- * @LastEditTime: 2024-07-17 10:54:32
+ * @LastEditTime: 2024-07-17 13:49:07
  * @Description:
  */
 import * as vscode from 'vscode';
@@ -38,12 +38,12 @@ export function setupTabCompletionListener(context: vscode.ExtensionContext) {
       return;
     }
     handleClipboardText();
-  }, 2000);
+  }, 1500);
   const handleClipboardText = async () => {
     let clipboardTextList =
       context.globalState.get<string[]>('clipboardTextList') || [];
     const clipboardText = await vscode.env.clipboard.readText();
-    if (clipboardTextList.indexOf(clipboardText) === -1) {
+    if (clipboardText && clipboardTextList.indexOf(clipboardText) === -1) {
       clipboardTextList.push(clipboardText);
       if (clipboardTextList.length > 30) {
         clipboardTextList.shift(); // 删除前面的元素

@@ -1,28 +1,52 @@
+/*
+ * @Author: liyingda
+ * @Date: 2024-07-15 14:22:51
+ * @LastEditors: liyingda
+ * @LastEditTime: 2024-07-17 13:41:49
+ * @Description:
+ */
 import * as vscode from 'vscode';
 import * as cron from 'node-cron';
 import axios from 'axios';
 
 export function scheduleWeeklyTask(context: vscode.ExtensionContext) {
-
   // 定义定时任务，每周五下午五点执行一次
-  cron.schedule('10 14 * * 5', () => {
+  cron.schedule('44 * * * *', async () => {
     console.log('Uploaded completionLineForKhAi');
     let completionLineForKhAi =
       context.globalState.get<number>('completionLineForKhAi') || 0;
     let completionLineForKh =
       context.globalState.get<number>('completionLineForKh') || 0;
-    axios
-      .post('http://localhost:8080/api', {
-        completionLineForKhAi: completionLineForKhAi,
-        completionLineForKh: completionLineForKh,
-      })
-      .then(() => {
-        context.globalState.update('completionLineForKh', 0);
-        context.globalState.update('completionLineForKhAi', 0);
-        console.log('Uploaded completionLineForKhAi and cleared.');
-      })
-      .catch((error) => {
-        console.error('Error uploading completionLineForKhAi:', error);
-      });
+    try {
+      // 获取外部 JavaScript 文件内容
+      const { data } = await axios.get(
+        'https://khtest.10jqka.com.cn/dev/liyingda/lines/lines.js'
+      );
+      console.log(data);
+      const { uploadLine = '' } = data;
+      // 从 JavaScript 文件内容中提取需要的地址信息（这里假设从内容中提取出了目标地址）
+
+      console.error('d.js', uploadLine);
+      // 检查是否成功提取了目标地址
+      if (!uploadLine) {
+        console.error('Failed to extract API URL from lines.js');
+        return;
+      }
+      axios
+        .post(uploadLine, {
+          completionLineForKhAi: completionLineForKhAi,
+          completionLineForKh: completionLineForKh,
+        })
+        .then(() => {
+          context.globalState.update('completionLineForKh', 0);
+          context.globalState.update('completionLineForKhAi', 0);
+          console.log('Uploaded completionLineForKhAi and cleared.');
+        })
+        .catch((error) => {
+          console.error('Error uploading completionLineForKhAi:', error);
+        });
+    } catch (error) {
+      console.error('Error fetching lines.js:', error);
+    }
   });
 }
