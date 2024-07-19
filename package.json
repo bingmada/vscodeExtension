@@ -29,6 +29,11 @@
           "id": "clipboardTextContent",
           "type": "webview",
           "name": "Clipboard"
+        },
+        {
+          "id": "FunctionBoxContent",
+          "type": "webview",
+          "name": "FunctionBox"
         }
       ]
     },

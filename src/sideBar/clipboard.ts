@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-
 export function registerClipboardTextListSidebar(
   context: vscode.ExtensionContext
 ) {
@@ -57,7 +56,7 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
       .map(
         (text, index) => `
           <div class="text-item">
-            <span>${text}</span>
+            <span class="text-item-span">${this.escapeHtml(text)}</span>
             <button class="ant-btn" onclick="copyText(${index})">Copy</button>
           </div>
         `
@@ -68,7 +67,14 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
       this._view.webview.html = this.getHtmlForWebview(content);
     }
   }
-
+  public escapeHtml(unsafe: string): string {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
   public getHtmlForWebview(content: string): string {
     return `
       <!DOCTYPE html>
@@ -79,15 +85,14 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
         <title>Clipboard Text List</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 10px; }
-          .text-item { margin-bottom: 10px; position: relative;
-            line-height: 1.5; }
-          .underline {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background-color: #ccc;
+          .text-item {
+            margin-bottom: 10px;
+            position: relative;
+            line-height: 1.5;
+            padding: 0 10px; 
+          }
+          .text-item-span{
+            word-break:break-all;
           }
           .ant-btn {
             margin-left: 10px;
@@ -119,12 +124,10 @@ class ClipboardTextListSidebarProvider implements vscode.WebviewViewProvider {
             vscode.postMessage({ command: 'copyText', index });
           }
 
-          // Function to scroll to the bottom
           function scrollToBottom() {
             window.scrollTo(0, document.body.scrollHeight);
           }
 
-          // Scroll to the bottom when the content is updated
           scrollToBottom();
         </script>
       </body>

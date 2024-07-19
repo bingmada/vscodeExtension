@@ -2,7 +2,7 @@
  * @Author: liyingda
  * @Date: 2024-07-15 14:22:51
  * @LastEditors: liyingda
- * @LastEditTime: 2024-07-17 13:41:49
+ * @LastEditTime: 2024-07-18 09:45:39
  * @Description:
  */
 import * as vscode from 'vscode';
@@ -11,7 +11,7 @@ import axios from 'axios';
 
 export function scheduleWeeklyTask(context: vscode.ExtensionContext) {
   // 定义定时任务，每周五下午五点执行一次
-  cron.schedule('44 * * * *', async () => {
+  cron.schedule('30 16 * * 5', async () => {
     console.log('Uploaded completionLineForKhAi');
     let completionLineForKhAi =
       context.globalState.get<number>('completionLineForKhAi') || 0;
@@ -34,8 +34,8 @@ export function scheduleWeeklyTask(context: vscode.ExtensionContext) {
       }
       axios
         .post(uploadLine, {
-          completionLineForKhAi: completionLineForKhAi,
-          completionLineForKh: completionLineForKh,
+          aiCodeLine: completionLineForKhAi,
+          allCodeLine : completionLineForKh,
         })
         .then(() => {
           context.globalState.update('completionLineForKh', 0);
