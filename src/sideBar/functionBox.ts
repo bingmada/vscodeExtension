@@ -2,7 +2,7 @@
  * @Author: liyingda
  * @Date: 2024-07-17 19:24:21
  * @LastEditors: liyingda
- * @LastEditTime: 2024-07-18 10:53:36
+ * @LastEditTime: 2024-07-19 15:52:19
  * @Description: 
  */
 import * as vscode from 'vscode';
@@ -50,7 +50,7 @@ class FunctionBoxProvider implements vscode.WebviewViewProvider {
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
-    const iframeSrc = webview.asWebviewUri(vscode.Uri.parse('https://khtest.10jqka.com.cn/dev/liyingda/functionBox/index.html'));
+    const iframeSrc = webview.asWebviewUri(vscode.Uri.parse(`https://khtest.10jqka.com.cn/dev/liyingda/functionBox/index.html?v=${new Date().getTime()}`));
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
